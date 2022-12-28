@@ -33,14 +33,24 @@
         app:layout_constraintTop_toBottomOf="@+id/tvBatLevel" />
 
     <Button
-        android:id="@+id/btTest"
+        android:id="@+id/btStartBatteryService"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Test"
+        android:text="Start BatteryService"
         app:layout_constraintEnd_toEndOf="@+id/tvBatLevel"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/tvBatLevel"
         app:layout_constraintTop_toBottomOf="@+id/tvBatVoltage" />
+
+    <Button
+        android:id="@+id/btStopBatteryService"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Stop BatteryService"
+        app:layout_constraintEnd_toEndOf="@+id/btStartBatteryService"
+        app:layout_constraintStart_toStartOf="@+id/btStartBatteryService"
+        app:layout_constraintTop_toBottomOf="@+id/btStartBatteryService" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
