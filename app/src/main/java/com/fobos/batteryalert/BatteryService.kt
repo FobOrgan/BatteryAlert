@@ -16,14 +16,18 @@ import kotlinx.coroutines.*
 class BatteryService : Service() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    val batteryBroadcastReceiver = BatteryBroadcastReceiver()
+    private val batteryBroadcastReceiver = BatteryBroadcastReceiver()
+    private val notificationManager by lazy {  getSystemService(NOTIFICATION_SERVICE) as NotificationManager}
+    private val notificationBuilder = createNotification()
+
 
     override fun onCreate() {
         super.onCreate()
         log("onCreate")
         createNotificationChannel()
 
-        startForeground(NOTIFICATION_ID,createNotification())
+        startForeground(NOTIFICATION_ID,notificationBuilder.build())
+
         val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         registerReceiver(batteryBroadcastReceiver, batteryFilter)
     }
@@ -33,6 +37,11 @@ class BatteryService : Service() {
         coroutineScope.launch {
             while (true){
                 delay(1000)
+                notificationBuilder.setContentText("" +
+                        "${batteryBroadcastReceiver.batteryData.voltage}"+
+                        " ${batteryBroadcastReceiver.batteryData.temperature}")
+                notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build())
+                log("notification changed")
             }
             //stopSelf()
         }
@@ -54,12 +63,11 @@ class BatteryService : Service() {
     }
 
     private fun createNotificationChannel(){
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(notificationChannel)
         }
@@ -69,9 +77,9 @@ class BatteryService : Service() {
         .setContentTitle("Title")
         .setContentText("Text")
         .setSmallIcon(R.drawable.ic_launcher_background)
-        .build()
 
     companion object{
+
         private const val CHANNEL_ID = "battery_service_channel_id"
         private const val CHANNEL_NAME = "battery_service_channel"
         private const val NOTIFICATION_ID = 1
