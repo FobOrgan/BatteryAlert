@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 data class BatteryData(
-    val chargePercent: Int,
-    val voltage:Int,
-    val temperature: Double
+    var chargePercent: Int,
+    var voltage:Int,
+    var temperature: Double
     )

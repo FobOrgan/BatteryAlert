@@ -11,14 +11,18 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.fobos.batteryalert.data.BatteryBroadcastReceiver
+import com.fobos.batteryalert.data_source.BatteryData
+import com.fobos.batteryalert.domain.UpdateBatteryDataListener
 import kotlinx.coroutines.*
 
-class BatteryService : Service() {
+class BatteryService : Service(),UpdateBatteryDataListener {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    private val batteryBroadcastReceiver = BatteryBroadcastReceiver()
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private val batteryBroadcastReceiver = BatteryBroadcastReceiver(this)
     private val notificationManager by lazy {  getSystemService(NOTIFICATION_SERVICE) as NotificationManager}
     private val notificationBuilder = createNotification()
+    private var currentBatteryData = BatteryData(0,0,0.0)
+    private var newBatteryData = BatteryData(0,0,0.0)
 
 
     override fun onCreate() {
@@ -37,15 +41,21 @@ class BatteryService : Service() {
         coroutineScope.launch {
             while (true){
                 delay(1000)
-                notificationBuilder.setContentText("" +
-                        "${batteryBroadcastReceiver.batteryData.voltage}"+
-                        " ${batteryBroadcastReceiver.batteryData.temperature}")
-                notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build())
-                log("notification changed")
+                if (currentBatteryData != newBatteryData){
+                    updateNotification()
+                    currentBatteryData = newBatteryData
+                }
             }
-            //stopSelf()
         }
         return START_STICKY
+    }
+
+    private fun updateNotification(){
+        notificationBuilder.setContentText("" +
+                "${batteryBroadcastReceiver.batteryData.voltage}"+
+                " ${batteryBroadcastReceiver.batteryData.temperature}"+
+                " ${batteryBroadcastReceiver.batteryData.chargePercent}")
+        notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build())
     }
 
     override fun onDestroy() {
@@ -78,6 +88,10 @@ class BatteryService : Service() {
         .setContentText("Text")
         .setSmallIcon(R.drawable.ic_launcher_background)
 
+    override fun updateBatteryData(newBatteryData: BatteryData) {
+        this.newBatteryData = newBatteryData
+    }
+
     companion object{
 
         private const val CHANNEL_ID = "battery_service_channel_id"
@@ -88,5 +102,4 @@ class BatteryService : Service() {
             return Intent(context, BatteryService::class.java)
         }
     }
-
 }

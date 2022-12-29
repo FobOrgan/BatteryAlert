@@ -6,8 +6,9 @@ import android.content.Intent
 import android.os.BatteryManager
 import android.util.Log
 import com.fobos.batteryalert.data_source.BatteryData
+import com.fobos.batteryalert.domain.UpdateBatteryDataListener
 
-class BatteryBroadcastReceiver: BroadcastReceiver() {
+class BatteryBroadcastReceiver(var updateBatteryDataListener: UpdateBatteryDataListener): BroadcastReceiver() {
     lateinit var batteryData: BatteryData
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -15,7 +16,6 @@ class BatteryBroadcastReceiver: BroadcastReceiver() {
         val voltage = intent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) ?:0
         val temperature = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)!!/10.0
         batteryData = BatteryData(chargePercent,voltage,temperature)
-        Log.d("DebugInfo", "Battery info: level = ${batteryData.voltage}% ")
-
+        updateBatteryDataListener.updateBatteryData(batteryData)
     }
 }
